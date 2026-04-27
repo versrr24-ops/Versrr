@@ -1,0 +1,1316 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+VERSRR
+
+
+Frontend Design Document
+
+
+
+
+
+Every screen, every component, every user flow
+
+For use with Claude Code
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Crexz · Versrr · March 2026
+
+
+
+
+
+
+
+1. Design System & Global Rules
+
+
+1.1 Brand Colours
+Colour
+Hex
+Tailwind
+Usage
+
+Purple (Primary)
+
+#6B21A8
+
+purple-800
+
+Logo, brand elements, verified badges, active nav, links
+
+Purple Light
+
+#7C3AED
+
+violet-600
+
+Hover states, highlights, gradient accents
+
+Amber (Accent)
+
+#F59E0B
+
+amber-500
+
+CTA buttons: Fund Escrow, Release, Accept, Mark Paid
+
+Dark Base
+
+#111827
+
+gray-900
+
+Page background (dark mode default)
+
+Dark Surface
+
+#1F2937
+
+gray-800
+
+Cards, modals, input fields, elevated surfaces
+
+Text Primary
+
+#F9FAFB
+
+gray-50
+
+Main text on dark backgrounds
+
+Text Secondary
+
+#6B7280
+
+gray-500
+
+Timestamps, helper text, captions, inactive tabs
+
+Success
+
+#10B981
+
+emerald-500
+
+Trade complete, verified, payment confirmed
+
+Error
+
+#EF4444
+
+red-500
+
+Disputes, warnings, failed actions, errors
+
+Border
+
+#374151
+
+gray-700
+
+Card borders, dividers, input borders on dark mode
+
+
+1.2 Typography
+
+
+Font: Inter (Google Fonts). Fallback: system-ui, sans-serif.
+
+
+Headings: text-xl (20px) bold for page titles. text-lg (18px) semibold for section headers.
+
+
+Body: text-sm (14px) for most content. text-xs (12px) for timestamps and captions.
+
+
+Numbers/Money: font-mono for all amounts and rates. Ensures digits align visually.
+
+
+1.3 Global Layout (Mobile-First)
+
+Mobile viewport: 375px minimum width. Everything designed for this first, then scales up.
+
+Top bar: Fixed. Height 56px. Dark (#111827). Left: Versrr logo (V mark). Right: notification bell icon + profile avatar/icon. Tapping profile opens dropdown menu.
+
+Bottom navigation: Fixed. Height 64px. Dark (#111827) with top border (#374151). Five tabs:
+P2P
+LK
+H&W
+Wallet
+API
+
+Marketplace
+
+Lock Trade
+
+Gift Cards
+
+Balance/Deposit
+
+Waitlist
+
+
+
+Active tab: Purple icon + purple label. Inactive tabs: gray-500 icon + label. Each tab has a simple icon above the label (use Lucide icons).
+
+Main content area: Scrollable area between top bar and bottom nav. Padding 16px horizontal. Background #111827.
+
+Desktop (>768px): Bottom nav moves to a left sidebar. Content area expands. Same components, more breathing room.
+
+
+1.4 Component Patterns
+
+
+Cards: bg-gray-800 rounded-xl border border-gray-700 p-4. Used for offers, trades, Lock Trades, bids.
+
+
+Buttons (Primary/CTA): bg-amber-500 text-gray-900 font-semibold rounded-lg py-3 px-6. Hover: bg-amber-400. Used for all money actions.
+
+
+Buttons (Secondary): bg-purple-800 text-white rounded-lg py-3 px-6. Hover: bg-violet-600. Used for non-money actions.
+
+
+Buttons (Outline): border border-gray-600 text-gray-300 rounded-lg py-3 px-6. Used for Cancel, Decline, secondary options.
+
+
+Inputs: bg-gray-800 border border-gray-700 rounded-lg p-3 text-gray-50. Focus: border-purple-800 ring-1 ring-purple-800.
+
+
+Badges: Verified = bg-purple-800/20 text-purple-400 text-xs px-2 py-1 rounded-full. Funded = bg-emerald-500/20 text-emerald-400. Not Funded = bg-gray-600/20 text-gray-400.
+
+
+Modals: Centered overlay with bg-black/60 backdrop. Modal body bg-gray-800 rounded-2xl p-6 max-w-md.
+
+
+Toast notifications: Slide in from top. Success = green left border. Error = red left border. Auto-dismiss 4 seconds.
+
+
+Empty states: Centered icon (gray-600) + text explaining what goes here + CTA button. Never show blank white/dark screens.
+
+
+Loading: Skeleton shimmer on cards (bg-gray-700 animate-pulse rounded). Never use spinners alone.
+
+
+
+2. Screen-by-Screen Specification
+
+
+2.1 Authentication Screens
+
+Sign Up
+
+Route: /signup
+
+Purpose: New user registration. Clean, minimal, single column form.
+
+
+Versrr logo centered at top
+
+
+Fields: Full Legal Name, Email, Phone Number, Password, Confirm Password
+
+
+Checkbox: ‘I agree to Terms of Service and Privacy Policy’ (links open in new tab)
+
+
+Primary button: ‘Create Account’ (amber)
+
+
+Below: ‘Already have an account? Log in’ link (purple)
+
+
+Referral: if URL contains ?ref=CODE, show ‘Referred by [username]’ banner at top (purple-bg)
+
+
+Validation: inline error messages below each field, red border on invalid fields
+
+
+
+Log In
+
+Route: /login
+
+Purpose: Returning user authentication.
+
+
+Versrr logo centered at top
+
+
+Fields: Email, Password
+
+
+Primary button: ‘Log In’ (amber)
+
+
+Below: ‘Forgot password?’ link, ‘Create account’ link
+
+
+If 2FA enabled: after password validation, show 2FA code entry screen (6-digit input with auto-focus between digits)
+
+
+
+2FA Setup
+
+Route: /settings/2fa
+
+Purpose: First-time 2FA configuration.
+
+
+QR code displayed prominently for scanning with authenticator app
+
+
+Manual entry key shown below QR (copyable)
+
+
+6-digit verification input to confirm setup
+
+
+Primary button: ‘Enable 2FA’
+
+
+Warning text: ‘Save your backup codes. You will need them if you lose your authenticator.’
+
+
+
+
+
+2.2 P2P Marketplace (Default Tab)
+
+P2P Home / Browse Offers
+
+Route: /p2p
+
+Purpose: The main trading screen. Users browse vendor offers.
+
+
+Toggle at top: BUY | SELL (pill-style toggle, active = amber background)
+
+
+Filter row below toggle: Asset dropdown (USDT/USDC), Payment Method dropdown, Amount input
+
+
+Offer list: each offer is a card showing —
+
+
+  • Vendor name + verification badge (‘Verified by 23 peers’ in purple)
+
+
+  • Rate (large, font-mono, e.g. ‘₦ 1,620 / USDT’)
+
+
+  • Available amount range (e.g. ‘$50 – $2,000’)
+
+
+  • Payment methods as small chips (e.g. ‘Bank Transfer’ ‘Opay’)
+
+
+  • Completion rate (e.g. ‘98.5%’) and trade count
+
+
+  • Green dot if vendor completed a trade in the last hour
+
+
+  • Primary button: ‘Buy USDT’ or ‘Sell USDT’ (amber)
+
+
+Sort options: Price (best first), Completion Rate, Trade Count
+
+
+Empty state: ‘No offers match your filters. Try adjusting your search.’
+
+
+Floating action button (bottom right, above nav): ‘+ Create Offer’ (purple circle, visible only to vendor-eligible users)
+
+
+
+Create Offer
+
+Route: /p2p/create
+
+Purpose: Vendor creates a public marketplace offer.
+
+
+Form fields: Direction (Buy/Sell toggle), Asset (USDT/USDC), Rate (number input with currency label), Min Amount, Max Amount
+
+
+Payment Methods: multi-select from approved list (Bank Transfer, Opay, PalmPay, Kuda, Mobile Money, etc.)
+
+
+Offer Terms: text area for vendor’s custom terms (displayed to buyer before trade opens)
+
+
+Verification Requirement: dropdown — ‘Any user’, ‘1+ verifications’, ‘3+ verifications’, ‘5+ verifications’
+
+
+Offer Tags: toggles for ‘No Third Party’, ‘No Negotiation’
+
+
+Preview: show how the offer will look in the marketplace
+
+
+Primary button: ‘Publish Offer’ (amber)
+
+
+
+Open Trade (Buyer View)
+
+Route: /trade/:id
+
+Purpose: Active trade screen after buyer opens a trade.
+
+
+Trade status bar at top: stepped progress indicator showing current state (Opened → Active → Paid → Verified → Complete)
+
+
+Trade details card: amount, rate, total fiat, payment method, vendor name + verification count
+
+
+Vendor’s terms displayed in a highlighted box (purple-bg/10)
+
+
+Payment instructions: vendor’s payment details (account name, number — shown after vendor engages)
+
+
+Vendor’s registered payment account name with verification count: ‘Pays from: John Okafor — verified by 47 users’
+
+
+Action buttons change by state:
+
+
+  • Opened: ‘Cancel Trade’ (outline) — waiting for vendor to engage
+
+
+  • Active: ‘I Have Paid’ (amber) + ‘Cancel’ (outline)
+
+
+  • Paid: waiting for vendor verification. Show countdown timer.
+
+
+  • Completed: ‘Trade Complete’ success state with green checkmark
+
+
+Trade chat panel: collapsible, opens from bottom. Send text messages. In-chat buttons: ‘Contact on WhatsApp’ ‘Contact on Telegram’ (only if vendor has linked accounts)
+
+
+Dispute button: appears after ‘Paid’ status. Red outline. Opens dispute filing flow.
+
+
+Timer: 5-minute vendor response countdown visible during ‘Opened’ state
+
+
+
+Open Trade (Vendor View)
+
+Route: /trade/:id
+
+Purpose: Same trade screen but from the vendor’s perspective.
+
+
+Same status bar and trade details as buyer view
+
+
+During ‘Opened’: ‘Accept Trade’ (amber) + ‘Decline’ (outline) with 5-min countdown
+
+
+During ‘Active’: waiting for buyer payment. Vendor’s own payment details shown for reference.
+
+
+During ‘Paid’: buyer has marked paid. Vendor sees:
+
+
+  • Buyer’s declared name prominently displayed
+
+
+  • Buyer’s peer verification history: ‘Verified by 3 vendors’ or ‘Not yet verified’
+
+
+  • If first-time buyer: KYC submission panel — buyer’s uploaded ID/proof visible to vendor
+
+
+  • ‘Verify Identity’ button (purple) — vendor confirms name matches payment sender
+
+
+  • ‘Release’ button (amber) — ONLY active after vendor clicks ‘Verify Identity’
+
+
+  • Verification confirmation modal: ‘You are confirming that [Buyer Name] matches the payment sender. This verification will be recorded on their profile.’
+
+
+Dispute button available after buyer marks paid
+
+
+
+
+
+2.3 Lock Trade (LK Tab)
+
+LK Home
+
+Route: /lk
+
+Purpose: Lock Trade dashboard showing user’s active Lock Trades.
+
+
+Two tabs at top: ‘My Lock Trades’ | ‘Received’
+
+
+‘My Lock Trades’: list of Lock Trades the user created (as vendor or as buyer). Each card shows: type (Vendor/Buyer), offer note preview, rate, status (Active/Paused/Expired), number of active trades against it, created date.
+
+
+‘Received’: Lock Trades where the user is a counterparty (clicked someone else’s link). Shows trade status.
+
+
+Floating action button: ‘+ Create Lock Trade’ (purple circle)
+
+
+Empty state: ‘No Lock Trades yet. Create one and share it on WhatsApp or Telegram.’
+
+
+
+Create Lock Trade
+
+Route: /lk/create
+
+Purpose: Create a private tradeable link.
+
+
+Direction toggle: ‘I’m Selling’ (vendor) | ‘I’m Buying’ (buyer requesting vendors)
+
+
+If Vendor: fields for Rate, Min Amount, Max Amount, Offer Note (free text), Terms (free text)
+
+
+If Buyer: fields for Amount Wanted, Offer Note describing what you need
+
+
+Both: optional Expiry (dropdown: 1 hour, 6 hours, 24 hours, 1 week, No expiry)
+
+
+Preview: show exactly what the recipient will see when they open the link
+
+
+Primary button: ‘Create Lock Trade’ (amber)
+
+
+After creation: link display screen with the generated URL (versrr.com/lk/CODE), large copy button, ‘Share on WhatsApp’ button (green), ‘Share on Telegram’ button (blue)
+
+
+
+Lock Trade Public Page (Vendor-Created)
+
+Route: /lk/:code
+
+Purpose: What anyone sees when they click a vendor’s Lock Trade link. No login required to view.
+
+
+Versrr branding at top (logo + ‘Lock Trade’ label)
+
+
+Vendor info card: name, verification count, completion rate, recent activity indicator
+
+
+Offer details: rate, min/max amount, offer note, terms
+
+
+Available: shows min/max trade limits (NOT vendor’s actual wallet balance)
+
+
+Amount input: user enters how much they want to trade
+
+
+Primary button: ‘Open Trade’ (amber). If not logged in, redirects to login/signup with return URL. If logged in, opens trade (same flow as P2P trade).
+
+
+Multiple users can open trades from this same link simultaneously
+
+
+Footer: ‘What is Versrr?’ brief explainer + link to main site
+
+
+
+Lock Trade Public Page (Buyer-Created)
+
+Route: /lk/:code
+
+Purpose: What vendors see when they click a buyer’s Lock Trade link.
+
+
+Buyer info: name, verification count
+
+
+Request details: amount wanted, offer note
+
+
+Vendor bid section: Rate input + Terms text area + ‘Submit Bid’ button (amber)
+
+
+Tag: if vendor is funded, show ‘Funded’ badge (green). If not, show ‘Not Funded’ badge (gray).
+
+
+Existing bids list (visible to the buyer only, not to other vendors)
+
+
+
+Lock Trade Management (Vendor)
+
+Route: /lk/:code/manage
+
+Purpose: Vendor manages their active Lock Trade and its trades.
+
+
+Lock Trade details card: rate, terms, status toggle (Active/Paused), Edit button, Delete button
+
+
+Active trades list: each trade card shows buyer name, amount, status, time opened
+
+
+Vendor can tap any trade to enter the standard trade screen (same as P2P trade view)
+
+
+Stats: total trades opened, total volume, active trades count
+
+
+
+Lock Trade Bids (Buyer View)
+
+Route: /lk/:code/bids
+
+Purpose: Buyer reviews vendor bids on their Lock Trade.
+
+
+List of vendor bids, each showing: vendor name + verification count, offered rate, terms preview, funded status badge (‘Funded’ green or ‘Not Funded’ gray), bid timestamp
+
+
+For each bid: ‘Accept’ (amber) + ‘Decline’ (outline) buttons
+
+
+On accept: if vendor is funded, trade opens immediately. If not funded, vendor gets 5-minute funding notification.
+
+
+After vendor funds: trade opens with standard flow
+
+
+
+
+
+2.4 H&W Gift Card Bidding (H&W Tab)
+
+H&W Home
+
+Route: /hw
+
+Purpose: Gift card marketplace feed.
+
+
+Two tabs: ‘Browse’ (live feed of card listings) | ‘My Listings’ (user’s own)
+
+
+Browse feed: cards showing — card type icon + name (e.g. Apple, Amazon, Steam), amount (e.g. $100), desired rate (e.g. 75%), time remaining on bidding, number of bids so far, user’s verification count
+
+
+Filter: card type dropdown, amount range
+
+
+Floating action button: ‘+ I Have a Card’ (purple circle)
+
+
+For verified vendors: incoming bid notifications appear as a banner at top
+
+
+
+Create H&W Listing
+
+Route: /hw/create
+
+Purpose: User posts a gift card for vendor bidding.
+
+
+Step 1 — H (I Have): select card type from list (Apple, Amazon, Google Play, Steam, iTunes, Sephora, Nike, etc.), enter card value, upload card image (optional at this stage)
+
+
+Step 2 — W (I Want): enter desired rate percentage (e.g. 75%). Helper text: ‘Vendors will bid at or above your rate.’
+
+
+Optional: add a note (e.g. ‘physical card, receipt available’)
+
+
+Bidding window: dropdown (5 min, 10 min, 15 min, 30 min)
+
+
+Preview: show how the listing will appear
+
+
+Primary button: ‘Post Listing’ (amber)
+
+
+After posting: live view of incoming bids with countdown timer
+
+
+
+H&W Listing Detail (Card Holder View)
+
+Route: /hw/:id
+
+Purpose: Card holder watches bids come in and accepts one.
+
+
+Listing summary card: card type, value, desired rate, time remaining (countdown)
+
+
+Bids list: each bid shows vendor name + verification count, offered rate (highlighted if above desired), funded status badge, bid time
+
+
+Bids sorted by rate (highest first)
+
+
+For each bid: ‘Accept’ (amber) button
+
+
+On accept: if vendor is funded, escrow locks and trade opens. If not funded, vendor gets 3-minute funding window. If vendor fails to fund, next highest bidder is offered the trade.
+
+
+After trade opens: standard trade flow with added step — card verification. Vendor verifies card balance before releasing crypto.
+
+
+Listing auto-closes when bidding window expires if no bid is accepted
+
+
+
+H&W Bid (Vendor View)
+
+Route: /hw/:id/bid
+
+Purpose: Vendor sees a card listing and places a bid.
+
+
+Card details: type, value, desired rate, card holder’s verification count, time remaining
+
+
+Bid form: Rate input (pre-filled with desired rate as minimum), Terms text area
+
+
+Funded status: if vendor has enough balance to cover the trade at their bid rate, auto-tagged ‘Funded.’ If not, tagged ‘Not Funded — you’ll have 3 minutes to fund if accepted.’
+
+
+Primary button: ‘Place Bid’ (amber)
+
+
+After bid: waiting state with ‘Your bid: 78% — Waiting for response’
+
+
+
+
+
+2.5 Wallet Tab
+
+Wallet Home
+
+Route: /wallet
+
+Purpose: User’s balances, deposit, and withdrawal.
+
+
+Balance card at top: total balance (large font-mono), breakdown below: USDT available | USDT locked | USDC available | USDC locked
+
+
+Locked amount has info tooltip: ‘Funds currently held in active trades’
+
+
+Two action buttons: ‘Deposit’ (purple) + ‘Withdraw’ (outline)
+
+
+Transaction history list below: deposits, withdrawals, escrow locks, escrow releases, fee deductions. Each entry: icon, description, amount (+/-), timestamp, tx hash link (opens BSCScan)
+
+
+Filter: All | Deposits | Withdrawals | Escrow
+
+
+
+Deposit Screen
+
+Route: /wallet/deposit
+
+Purpose: Show user their deposit address.
+
+
+Asset selector: USDT | USDC toggle
+
+
+Network label: ‘BNB Smart Chain (BEP-20)’ with warning icon
+
+
+QR code of deposit address (large, centered)
+
+
+Address text with copy button
+
+
+Warning box (amber-bg): ‘Only send USDT or USDC on BNB Smart Chain to this address. Sending other tokens or using the wrong network will result in permanent loss.’
+
+
+Deposit history below
+
+
+
+Withdraw Screen
+
+Route: /wallet/withdraw
+
+Purpose: User withdraws funds to external address.
+
+
+Asset selector: USDT | USDC
+
+
+Amount input with ‘Max’ button (fills available balance)
+
+
+Withdrawal address: shows saved address. If no saved address, prompt to add one in Settings.
+
+
+Warning: if address was changed in last 24 hours, show ‘24-hour security hold active. Withdrawals available in [countdown].’
+
+
+Fee display: ‘Fee: $0.30’ or ‘Fee: Free (7 of 10 free withdrawals remaining)’
+
+
+2FA code input (6 digits)
+
+
+Primary button: ‘Confirm Withdrawal’ (amber)
+
+
+Confirmation modal: ‘You are sending [amount] USDT to [address]. This cannot be reversed.’
+
+
+
+
+2.6 Profile & Settings
+
+Profile (Own)
+
+Route: /profile
+
+Purpose: User’s own profile and verification status.
+
+
+Name, email, phone (partially masked), member since date
+
+
+Verification section: peer verification count, list of recent verifications (who verified, when, which trade), verification tier (New User / Peer Verified / Vendor Eligible)
+
+
+Registered payment accounts (for vendors): list of account names with verification counts
+
+
+Trade stats: total trades, completion rate, average release time
+
+
+Referral section: referral link with copy button, ‘Share on WhatsApp’ button, referral count, referral earnings this month
+
+
+If vendor-eligible but not yet vendor: ‘Apply to become a Vendor’ CTA (purple)
+
+
+
+Profile (Public / Other User)
+
+Route: /user/:id
+
+Purpose: Viewing another user’s public profile.
+
+
+Name, verification count + badges, member since date
+
+
+Registered payment accounts (if vendor) with verification counts
+
+
+Trade stats: total trades, completion rate, average release time, last active
+
+
+Active public offers (if vendor) listed as cards
+
+
+No email, phone, or personal details shown
+
+
+
+Settings
+
+Route: /settings
+
+Purpose: Account settings and preferences.
+
+
+Sections: Account (change password, manage 2FA), Withdrawal Address (add/change with 24-hour hold warning), Linked Accounts (WhatsApp number, Telegram handle), Payment Accounts (add/manage registered payment names — vendors only), Notification Preferences (email on/off, Telegram on/off, push on/off), Referral (view link, stats, earnings)
+
+
+
+
+2.7 Disputes
+
+File Dispute
+
+Route: /trade/:id/dispute
+
+Purpose: Submit a dispute on an active trade.
+
+
+Reason selector: dropdown with common reasons (Payment not received, Wrong amount, Unresponsive counterparty, Suspicious activity, Other)
+
+
+Description: text area for detailed explanation
+
+
+Evidence upload: drag/drop or tap to upload screenshots, screen recordings. Max 5 files, 10MB each.
+
+
+External evidence link: optional URL field for cloud storage links
+
+
+Visibility toggle: ‘Share evidence with counterparty?’ (default: yes for transparency)
+
+
+Primary button: ‘Submit Dispute’ (red)
+
+
+Warning: ‘Filing a false dispute may result in account restrictions.’
+
+
+
+Dispute Status
+
+Route: /disputes/:id
+
+Purpose: View dispute progress and resolution.
+
+
+Dispute details: reason, description, evidence from both parties
+
+
+Status: Submitted → Under Review → Resolved
+
+
+Resolution (when resolved): outcome text + which party received the funds
+
+
+At launch: resolved by admin (Crexz). Later: resolved by 3-person moderator panel.
+
+
+
+
+
+2.8 Admin Panel
+
+Accessible only by founding team accounts. Route prefix: /admin. Simple, functional, not designed for beauty.
+
+Admin Dashboard
+
+Route: /admin
+
+Purpose: Platform overview at a glance.
+
+
+Stats cards: Total Users, Active Vendors, Total Trades (24h), Total Volume (24h), Open Disputes, Platform Revenue (escrow fees collected)
+
+
+Recent activity feed: latest sign-ups, latest trades, latest disputes
+
+
+
+Admin Disputes
+
+Route: /admin/disputes
+
+Purpose: Review and resolve disputes.
+
+
+List of open disputes sorted by oldest first
+
+
+Each dispute expandable: trade details, evidence from both parties, trade chat history
+
+
+Resolution buttons: ‘Release to Buyer’ (amber), ‘Release to Vendor’ (amber), ‘Split’ (outline, opens amount input)
+
+
+Resolution note: text area for admin’s decision reasoning
+
+
+
+Admin Users
+
+Route: /admin/users
+
+Purpose: User management.
+
+
+Searchable user list: search by name, email, phone
+
+
+Each user row: name, email, verification count, trade count, status (active/suspended)
+
+
+User detail page: full profile, all trades, all verifications, all disputes
+
+
+Actions: Suspend Account, Unsuspend, Flag for Review, Grant Vendor Status (for Genesis Vendors)
+
+
+
+
+2.9 API Tab (Waitlist)
+
+API Waitlist
+
+Route: /api
+
+Purpose: Placeholder tab for the future agentic API.
+
+
+Hero section: illustration or icon of code/API. Headline: ‘Versrr API — Coming Soon’
+
+
+Brief description: ‘Automate your trades, build bots, and integrate Versrr into your workflow. Join the waitlist to be the first to know when the API launches.’
+
+
+Email input + ‘Join Waitlist’ button (purple)
+
+
+After submission: ‘You’re on the list! We’ll notify you when the API is ready.’
+
+
+Feature preview list: ‘Monitor trades’, ‘Automate responses’, ‘Read offer data’, ‘Webhook notifications’
+
+
+
+
+
+3. Critical User Flows
+
+
+3.1 First-Time Buyer Flow (Unverified User)
+
+
+User signs up (email + phone + name).
+
+
+User deposits USDT to their unique address. Balance appears in wallet.
+
+
+User goes to P2P tab. Sees offers. Some offers show ‘Verified users only’ — these are grayed out with tooltip explaining why.
+
+
+User taps an offer that accepts unverified users. Enters amount. Sees vendor terms. Taps ‘Buy USDT.’
+
+
+Trade opens. Escrow locks. Vendor is notified.
+
+
+Vendor engages. Shows payment details. User sends fiat payment.
+
+
+User taps ‘I Have Paid.’ If first-time: prompted to submit KYC (photo of ID matching their declared name). Sensitive data can be redacted.
+
+
+Vendor sees buyer’s name + submitted KYC. Verifies name matches payment sender. Clicks ‘Verify Identity’ then ‘Release.’
+
+
+Trade completes. Buyer receives crypto. Buyer’s profile now shows: ‘Verified by 1 vendor.’
+
+
+Buyer can now access ‘Verified users only’ offers. After 15 verifications, eligible to become vendor.
+
+
+3.2 Vendor Lock Trade Flow (Multi-User)
+
+
+Vendor goes to LK tab → ‘Create Lock Trade’ → selects ‘I’m Selling.’
+
+
+Sets rate, min/max, writes offer note and terms. No expiry. Taps ‘Create.’
+
+
+Gets shareable link. Shares on WhatsApp trading group.
+
+
+User A clicks link. Sees offer details (rate, terms, min/max). Enters $100. Taps ‘Open Trade.’ If not logged in, redirected to sign up first.
+
+
+System checks vendor’s available balance ≥ $100. Locks $100 from vendor’s available balance. Trade opens.
+
+
+User B clicks same link. Enters $200. System checks vendor’s remaining available balance. Locks $200. Second trade opens.
+
+
+Vendor sees both trades in LK management screen. Handles each independently — same flow as any P2P trade.
+
+
+Vendor can pause or delete the Lock Trade at any time. Existing open trades continue but no new ones can be started.
+
+
+3.3 H&W Gift Card Flow
+
+
+User goes to H&W tab → taps ‘+ I Have a Card.’
+
+
+Selects Apple Gift Card, enters $100 value, sets desired rate 75%, sets 10-min bidding window. Posts listing.
+
+
+All verified gift card vendors receive notification (push + Telegram).
+
+
+Vendor A bids 76%. Vendor B bids 78%. Vendor C bids 80%. User sees all bids, sorted by highest rate.
+
+
+Vendor C shows ‘Funded’ badge (has enough balance). User accepts Vendor C’s bid.
+
+
+$80 USDT locked from Vendor C’s available balance (80% of $100). Trade opens.
+
+
+In trade chat, user shares gift card details. Vendor verifies card balance. If valid, vendor clicks ‘Verify Identity’ then ‘Release.’ User receives $80 USDT.
+
+
+If card is invalid/partially redeemed: vendor files dispute with evidence.
+
+
+3.4 User-Created Lock Trade (Buyer Seeking Vendors)
+
+
+User goes to LK tab → ‘Create Lock Trade’ → selects ‘I’m Buying.’
+
+
+Enters: ‘I want $500 USDT’ + offer note: ‘Paying via bank transfer, need fast release.’ Posts it.
+
+
+Shares link in Telegram vendor group.
+
+
+Vendor A opens link. Sees request details. Bids rate ₦1,600/USDT + terms. Shows ‘Funded’ badge.
+
+
+Vendor B bids ₦1,580/USDT. Shows ‘Not Funded’ badge.
+
+
+User sees both bids. Accepts Vendor A (funded, better rate).
+
+
+$500 USDT locked from Vendor A’s balance. Trade opens with standard flow.
+
+
+If user had accepted Vendor B (not funded): Vendor B gets 5-minute notification to fund. If funded in time, trade opens. If not, user can accept another vendor.
+
+
+
+4. Next.js File Structure
+
+This is the recommended folder structure for the frontend project. Each route maps to a page file. Shared components live in /components.
+File / Folder
+Purpose
+
+app/layout.tsx
+
+Root layout: top bar, bottom nav, providers
+
+app/page.tsx
+
+Redirect to /p2p (default tab)
+
+app/(auth)/login/page.tsx
+
+Login screen
+
+app/(auth)/signup/page.tsx
+
+Sign up screen
+
+app/p2p/page.tsx
+
+P2P marketplace browse
+
+app/p2p/create/page.tsx
+
+Create public offer
+
+app/trade/[id]/page.tsx
+
+Active trade screen (buyer + vendor)
+
+app/trade/[id]/dispute/page.tsx
+
+File dispute
+
+app/lk/page.tsx
+
+Lock Trade dashboard
+
+app/lk/create/page.tsx
+
+Create Lock Trade
+
+app/lk/[code]/page.tsx
+
+Public Lock Trade page
+
+app/lk/[code]/manage/page.tsx
+
+Vendor management
+
+app/lk/[code]/bids/page.tsx
+
+Buyer bid review
+
+app/hw/page.tsx
+
+H&W gift card feed
+
+app/hw/create/page.tsx
+
+Create H&W listing
+
+app/hw/[id]/page.tsx
+
+Listing detail + bids
+
+app/wallet/page.tsx
+
+Wallet home
+
+app/wallet/deposit/page.tsx
+
+Deposit screen
+
+app/wallet/withdraw/page.tsx
+
+Withdraw screen
+
+app/profile/page.tsx
+
+Own profile
+
+app/user/[id]/page.tsx
+
+Public user profile
+
+app/settings/page.tsx
+
+Settings
+
+app/disputes/[id]/page.tsx
+
+Dispute status
+
+app/api-waitlist/page.tsx
+
+API waitlist
+
+app/admin/page.tsx
+
+Admin dashboard
+
+app/admin/disputes/page.tsx
+
+Admin disputes
+
+app/admin/users/page.tsx
+
+Admin users
+
+components/ui/
+
+Button, Input, Card, Badge, Modal, Toast, etc.
+
+components/trade/
+
+TradeCard, TradeStatus, TradeChat, etc.
+
+components/offer/
+
+OfferCard, OfferForm, OfferFilters
+
+components/wallet/
+
+BalanceCard, DepositQR, WithdrawForm
+
+components/layout/
+
+TopBar, BottomNav, Sidebar
+
+lib/api.ts
+
+API client (fetch wrapper with JWT)
+
+lib/auth.ts
+
+Auth context, token management
+
+lib/constants.ts
+
+Colours, config values
+
+
+
+
+5. Implementation Notes for Claude Code
+
+
+Dark mode is the default. Every component should be styled for dark first. Use Tailwind’s dark: prefix only if you also support light mode. For MVP, dark only is fine.
+
+
+Mobile first. Build every screen at 375px width first. Then add responsive breakpoints for tablet (768px) and desktop (1024px+).
+
+
+All money amounts use font-mono. Rates, balances, trade amounts — anything with numbers should use monospace font for digit alignment.
+
+
+All CTA buttons are amber. Any button that involves money (Fund, Release, Pay, Accept, Withdraw, Deposit) is bg-amber-500. Non-money actions use purple.
+
+
+Verification badges everywhere. ‘Verified by N peers’ should appear on offer cards, trade screens, Lock Trade pages, H&W bids, and profiles. It’s the trust signal. Make it visible.
+
+
+Error states are mandatory. Every API call needs a loading state, a success state, and an error state. Never leave a screen blank or hanging.
+
+
+Copy patterns from existing fintech apps. Binance’s trade flow, Wise’s transfer flow, Kuda’s dashboard. These are patterns your users already understand.
+
+
+Test with real content lengths. A vendor name might be 3 characters or 25. An offer note might be 10 words or 200. Terms might be 1 line or 10. Design for the range, not the ideal.
+
+
+
+
+— End of Frontend Design Document —
+
+
